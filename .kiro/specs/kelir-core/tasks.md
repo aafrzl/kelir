@@ -31,7 +31,7 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
 - [ ] 4. Pure systems (tests first: unit + `*.pbt.test.ts` for every invariant in `design.md`)
   - [x] 4.1 `geometry.ts`: `segmentsIntersect`, `isOccluded`, `distance`, `lampPosition`, `bodyOccluder`, `toWorld`
     - _Requirements: 5.1, 5.7_
-  - [ ] 4.2 `oil.ts`: drain, cycle, jars, oil-low crossing, pawon source cooldown
+  - [x] 4.2 `oil.ts`: drain, cycle, jars, oil-low crossing, pawon source cooldown
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.8, 4.9, 4.10_
   - [ ] 4.3 `sukma.ts`: `tickSukma`, `distortionFrom`
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.7_

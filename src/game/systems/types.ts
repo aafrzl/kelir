@@ -5,3 +5,9 @@ export type Vec2 = Readonly<{ x: number; y: number }>;
 
 /** A line segment that can block the lamp's light: a wall, door, pillar side, furniture edge or the player's body. */
 export type Wall = Readonly<{ a: Vec2; b: Vec2 }>;
+
+/**
+ * The blencong's (oil lamp's) flame: `high` lights far and casts large shadows, `low` lights near
+ * and casts small ones, `off` is darkness (Kala frozen, Sukma drains).
+ */
+export type LampState = "high" | "low" | "off";

@@ -78,3 +78,21 @@ Running log for the Kiroween 2026 "How Kiro was used" write-up. New entries are 
   - Before copying, reviewed every file: no prompt-injection phrasing, no network calls or shell execution in the five bundled Python helpers, links only to engine docs.
   - Installed by copy from the reviewed clone instead of `npx skills add`, so the repo holds exactly the reviewed commit.
   - Checked for name clashes with global skills (none).
+
+## 2026-11-13 — Task 4.2: Oil (the blencong's fuel)
+- What was built:
+  - `src/game/systems/oil.ts` (pure): drain per flame, the high → low → off lamp cycle with no lighting on an empty tank, jars (`collectJar`, idempotent and remembered for the checkpoint), the "oil low" crossing flag, and the refillable pawon source with a 90 s cooldown.
+  - `LampState` moved to the shared `types.ts`; constants in `constants.ts`.
+  - 32 unit tests and 7 fast-check properties, including a 200-action play simulation, written before the code.
+- Kiro features used: spec sub-task 4.2; `tech.md`/`structure.md` steering; the new workspace skills (`survival-crafting` for needs/refill pacing); `test-related-on-save` hook; `kelir-reviewer` sub-agent (four rounds).
+- What Kiro caught or decided:
+  - **Design fix:** design.md stored the pawon source as an absolute "ready at" time, but the checkpoint doesn't save the game clock, so a restore would break it. It's now a countdown of seconds left; design.md, the checkpoint and the store were updated, and `tickOilSource` added to the tick order.
+  - **Generators that tested almost nothing:**
+    - The reviewer measured, and Kiro reproduced, that fast-check 4 caps arrays at 10 items without `size: "max"`.
+    - `fc.double` put 91% of time steps under 1e-9 s, so no run ever reused the source.
+    - The same flaw meant 92% of geometry coordinates were within 1 mm of the origin.
+    - Generators now use whole 60 Hz ticks and a mm grid. Each property asserts a minimum share of runs that reach the rare case (measured 53–79% against a 30% guard). The rule is written into `tech.md`.
+  - **A real bug the better generators exposed in 4.1's geometry:** a player exactly 10 cm from a wall had the lamp placed behind it (capsule entry rounded to −5e-18). The first fix then over-corrected tangent cases, and the reviewer caught that too. Both are fixed with regression tests and two new properties ("full reach whenever the path is clear", "a pulled-back lamp sits exactly on a clearance boundary").
+  - Mutation checks: 11 deliberate oil bugs and 5 geometry bugs are each caught; the property files alone catch the ones that the unit tests used to catch on their own.
+  - The suite passed 15 of 15 consecutive runs (150 tests).
+- Time saved vs. doing it by hand (rough): ~4 hours. The lamp-behind-wall bug would have shown up as random light leaks in task 9, which are hard to reproduce.

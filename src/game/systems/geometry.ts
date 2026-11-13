@@ -86,20 +86,27 @@ export function distanceToSegment(p: Vec2, w: Wall): number {
   return distance(p, { x: w.a.x + edge.x * t, y: w.a.y + edge.y * t });
 }
 
-/** Entry distance of the ray into the disc of radius `r` around `c`, or ∞. Ignores discs behind or being left. */
+/**
+ * Entry distance of the ray into the disc of radius `r` around `c`, or ∞. Ignores discs behind or
+ * being left, and a ray starting on the boundary that only touches it tangentially. An origin on
+ * the boundary that is heading inwards (a rounding hair inside) counts as entering at 0.
+ */
 function rayCircleEntry(origin: Vec2, dir: Vec2, c: Vec2, r: number): number {
   const fx = origin.x - c.x;
   const fy = origin.y - c.y;
-  const b = fx * dir.x + fy * dir.y;
+  const b = fx * dir.x + fy * dir.y; // < 0 while heading towards the centre
   const disc = b * b - (fx * fx + fy * fy - r * r);
   if (disc < 0) return Number.POSITIVE_INFINITY;
   const t = -b - Math.sqrt(disc);
-  return t >= 0 ? t : Number.POSITIVE_INFINITY;
+  return b < -EPS && t >= -EPS ? Math.max(0, t) : Number.POSITIVE_INFINITY;
 }
 
 /**
  * Distance along the ray at which it first comes within `r` of segment `w` (entry into the
- * capsule of radius `r` around it), or ∞. Assumes `origin` starts at least `r` away.
+ * capsule of radius `r` around it), or ∞. Assumes `origin` starts at least `r` away; an origin
+ * exactly on the capsule's boundary and heading inwards counts as entering at 0. (A ray within
+ * about 1e-6 rad of parallel to a side it starts on can still skip that side; the lamp then ends
+ * at most a few µm inside the margin.)
  */
 function rayCapsuleEntry(origin: Vec2, dir: Vec2, w: Wall, r: number): number {
   let best = Math.min(rayCircleEntry(origin, dir, w.a, r), rayCircleEntry(origin, dir, w.b, r));
@@ -115,8 +122,10 @@ function rayCapsuleEntry(origin: Vec2, dir: Vec2, w: Wall, r: number): number {
     const ny = ux * side;
     const approach = dir.x * nx + dir.y * ny;
     if (approach >= -EPS) continue; // parallel to, or moving away from, this side
-    const t = ((w.a.x + nx * r - origin.x) * nx + (w.a.y + ny * r - origin.y) * ny) / approach;
-    if (t < 0 || t >= best) continue;
+    const raw = ((w.a.x + nx * r - origin.x) * nx + (w.a.y + ny * r - origin.y) * ny) / approach;
+    if (raw < -EPS) continue;
+    const t = Math.max(0, raw);
+    if (t >= best) continue;
     const along = (origin.x + dir.x * t - w.a.x) * ux + (origin.y + dir.y * t - w.a.y) * uy;
     if (along >= 0 && along <= length) best = t;
   }

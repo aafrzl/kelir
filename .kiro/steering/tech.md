@@ -37,6 +37,10 @@ inclusion: always
 ## Testing
 - Every pure system in `src/game/systems/` has a `*.test.ts` file next to it.
 - Use **fast-check** property tests for invariants (value ranges, monotonic drains, state-machine rules, save/load round-trips). Name them `*.pbt.test.ts`.
+- Generators must reach the cases that matter (fast-check 4):
+  - `fc.array` stops at about 10 items unless you pass `size: "max"`.
+  - `fc.double` samples evenly over representable doubles, so about 90% of values in a range like [0, 30] land near 0. For times, levels and coordinates, map integers instead (`fc.integer({ min: 0, max: 1800 }).map(n => n / 60)` for whole 60 Hz ticks); keep raw doubles only where tiny values are the point.
+  - When a property depends on a rare case (a threshold crossing, a second cooldown), count how often it happens and assert a minimum share, so a weak generator fails loudly.
 - Run: `npx vitest run`. A single file: `npx vitest related --run <file>`.
 - Type-check: `npx tsc --noEmit`. Lint: `npm run lint`.
 

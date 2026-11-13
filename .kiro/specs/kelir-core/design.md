@@ -58,7 +58,7 @@ flowchart LR
 
 1. Read the input snapshot and settings.
 2. If the phase is not `playing` → skip steps 3–8 (game time does not advance).
-3. `tickOil(oil, lamp, dt)` → new oil, possibly forced `off`; oil-low crossing flag.
+3. `tickOil(oil, lamp, dt)` → new oil, possibly forced `off`; oil-low crossing flag. `tickOilSource(oilSourceCooldown, dt)` → seconds left on the pawon source's cooldown.
 4. `tickSukma(sukma, lamp, dt)` → new Sukma.
 5. `classify(plan, lamp, occluders)` → `Set<NodeId>` of shadow nodes, **every tick**, from the lamp position and state of this tick. Budget: ~80 nodes × ~250 segments; benchmarked in task 4.4 (target < 0.5 ms).
 6. `tickKala(kala, ctx, dt)` → new Kala state, `caught` flag, `pathDistance`.
@@ -113,14 +113,18 @@ function toWorld(v: Vec2, height?: number): [number, number, number];
 
 ### `oil.ts`
 ```ts
-type LampState = 'high' | 'low' | 'off';
-// constants.ts: OIL_MAX = 100, OIL_START = 100, OIL_LOW = 20, DRAIN = { high: 1.0, low: 0.5, off: 0 },
-//               JAR = 40, SOURCE_AMOUNT = 40, SOURCE_COOLDOWN = 90 (s of game time)
+// types.ts: type LampState = 'high' | 'low' | 'off'   (shared by oil, sukma, shadowZones, kala)
+// constants.ts: OIL_MAX = 100, OIL_START = 100, LAMP_START = 'high', OIL_LOW = 20,
+//               OIL_DRAIN = { high: 1.0, low: 0.5, off: 0 }, OIL_JAR_AMOUNT = 40,
+//               OIL_SOURCE_AMOUNT = 40, OIL_SOURCE_COOLDOWN = 90 (s of game time)
 function tickOil(oil: number, lamp: LampState, dt: number): { oil: number; lamp: LampState; crossedLow: boolean };
 function cycleLamp(lamp: LampState, oil: number): LampState;   // off stays off when oil = 0
-function addOil(oil: number, amount?: number): number;          // clamp to OIL_MAX
-function useOilSource(oil: number, readyAt: number, now: number): { oil: number; readyAt: number; used: boolean };
+function addOil(oil: number, amount?: number): number;          // clamp to OIL_MAX; never removes oil
+function collectJar(oil: number, jarsTaken: readonly string[], jarId: string): { oil: number; jarsTaken: readonly string[]; collected: boolean };
+function drawFromOilSource(oil: number, cooldown: number): { oil: number; cooldown: number; used: boolean };
+function tickOilSource(cooldown: number, dt: number): number;   // seconds left, never below 0
 ```
+The pawon source stores **seconds left** on its cooldown, counted down on game ticks, instead of an absolute "ready at" time. The checkpoint does not store the game clock, so an absolute time would be meaningless after a restore. A relative countdown restores correctly, and gives the prompt its "ready in N s" value directly.
 
 ### `sukma.ts`
 ```ts
@@ -175,7 +179,7 @@ The door opens in logic as soon as the 4th puppet is placed (the player is in th
 interface Checkpoint {
   version: 1;
   progress: Progress; oil: number; playerPos: Vec2; facing: Vec2;
-  oilJarsTaken: string[]; oilSourceReadyAt: number; notesFound: string[];
+  oilJarsTaken: readonly string[]; oilSourceCooldown: number; notesFound: string[];
   journal: string[]; hintsSeen: string[];
 }
 function serialize(c: Checkpoint): string;
@@ -192,7 +196,7 @@ interface GameStore {
   lamp: LampState; oil: number; sukma: number; distortion: number;
   kala: KalaState; kalaPathDistance: number | null;
   progress: Progress; outcome: 'playing' | 'caught' | 'soulLost' | 'dawn';
-  oilJarsTaken: string[]; oilSourceReadyAt: number; notesFound: string[]; hintsSeen: string[];
+  oilJarsTaken: readonly string[]; oilSourceCooldown: number; notesFound: string[]; hintsSeen: string[];
   prompt: { label: string; key: string } | null;
   captions: { id: string; text: string; until: number }[];   // `until` in game time
   journal: string[];
@@ -250,9 +254,10 @@ See the interfaces above. All lore text, puppet data, hint and caption strings l
 | Property | System | Requirement |
 |---|---|---|
 | For any sequence of ticks and lamp states, `0 ≤ oil ≤ 100` | oil | 4.3 |
-| Oil never increases during ticks; only `addOil` / `useOilSource` increase it | oil | 4.2, 4.5, 4.10 |
+| Oil never increases during ticks; only `addOil`, `collectJar` and `drawFromOilSource` increase it | oil | 4.2, 4.5, 4.10 |
 | When oil = 0, `cycleLamp` never returns `high`/`low` | oil | 4.4 |
-| `useOilSource` never succeeds twice within the cooldown | oil | 4.10 |
+| `drawFromOilSource` never succeeds twice within the cooldown, and always succeeds once it has elapsed | oil | 4.10 |
+| The oil-low cue fires exactly once per downward crossing of `OIL_LOW` | oil | 4.9 |
 | For any sequence, `0 ≤ sukma ≤ 100`; strictly decreasing while `off` until 0 | sukma | 6.1–6.3 |
 | `distortionFrom` is monotonic non-increasing in sukma and within [0,1] | sukma | 6.5 |
 | `segmentsIntersect` is symmetric in its two segments | geometry | 5.1 |

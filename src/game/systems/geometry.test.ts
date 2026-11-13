@@ -122,6 +122,25 @@ describe("lampPosition", () => {
     for (const w of walls) expect(distanceToSegment(lamp, w)).toBeGreaterThanOrEqual(LAMP_WALL_MARGIN - 1e-9);
   });
 
+  it("stops at a wall when the player is exactly LAMP_WALL_MARGIN from it (rounding puts the entry a hair behind)", () => {
+    // Shrunk counterexample from the property tests: the capsule entry came out as about -5e-18 and
+    // the wall was skipped, so the lamp landed 0.3 m beyond it.
+    const player = v(-0.006, -4.348);
+    const walls = [wall(0.094, -10, 0.094, 10), wall(0.094, -4.4, 0.094, -4.3), wall(0.094, -4.348, 0.094, 0)];
+    for (const w of walls) {
+      const lamp = lampPosition(player, v(1, 0), [w]);
+      expect(isOccluded(player, lamp, [w])).toBe(false);
+      expect(lamp.x).toBeLessThan(0.094);
+    }
+  });
+
+  it("does not pull back for a wall end it is leaving, even from exactly LAMP_WALL_MARGIN away", () => {
+    // On the boundary of the clearance circle around the wall's end, facing almost along the tangent
+    // but away from it: nothing is ahead, so the lamp keeps its full reach.
+    const lamp = lampPosition(v(0, 0.1), v(Math.cos(1e-9), Math.sin(1e-9)), [wall(0, 0, 0, -1)]);
+    expect(distance(v(0, 0.1), lamp)).toBeCloseTo(LAMP_OFFSET, 9);
+  });
+
   it("keeps half its clearance from a wall the player is already inside the margin of", () => {
     // Only reachable without collision (e.g. the 2D dev page). The lamp stays on the player's side
     // of the wall unless the player is within LAMP_MIN_REACH of it.
