@@ -12,8 +12,9 @@ fileMatchPattern: ["src/game/**/*.tsx", "src/game/scene/**/*", "src/game/entitie
 - Convert 2D floor-plan coordinates only with `toWorld()` (2D `y` → three.js `z`).
 
 ## Lighting and shadows
-- `<Canvas shadows>` with one shadow-casting `pointLight` attached to the blencong. `shadow-mapSize` 512 on "low" quality, 1024 on "high". Its `distance` equals `SHADOW_RANGE[lamp]`, so visible falloff matches the logic.
+- `<Canvas shadows>` with one shadow-casting `pointLight` attached to the blencong. `shadow-mapSize` 512 on "low" quality, 1024 on "high". Its `distance` equals `SHADOW_RANGE[lamp]`, so visible falloff matches the logic. Set `shadow-camera-near` to about 0.02: the lamp can sit centimetres from the body and from walls, and three's default near plane (0.5 m) would drop those shadows.
 - A point-light shadow renders every caster six times and `renderer.info` counts those passes. Only merged walls, instanced pillars, merged large furniture and the invisible player-body proxy cast shadows (≤ 12 shadow-casting draw calls). Floors, roof and the kelir do not.
+- The body proxy is a thin slab matching `bodyOccluder()`, not a capsule (the lamp must never be inside it). Wall meshes stay thinner than 2 × `LAMP_WALL_MARGIN` (0.2 m), so the lamp is never inside a wall.
 - Every visible shadow caster must also be an occluder in `floorPlan.ts`, and the reverse.
 - Ambient light near zero. No directional moonlight (without shadows it would light windowless rooms). Readability comes from a per-area ambient tint (`areaAmbient` in `floorPlan.ts`) and additive moon-shaft planes at openings.
 - Flame flicker = smooth noise on intensity and position, scaled by oil level and lamp state, at ≤ 3 Hz with a brightness swing under 10% (never a flash under WCAG 2.3.1).

@@ -29,7 +29,7 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
   - _Requirements: 12.4, 12.5_
 
 - [ ] 4. Pure systems (tests first: unit + `*.pbt.test.ts` for every invariant in `design.md`)
-  - [ ] 4.1 `geometry.ts`: `segmentsIntersect`, `isOccluded`, `distance`, `lampPosition`, `bodyOccluder`, `toWorld`
+  - [x] 4.1 `geometry.ts`: `segmentsIntersect`, `isOccluded`, `distance`, `lampPosition`, `bodyOccluder`, `toWorld`
     - _Requirements: 5.1, 5.7_
   - [ ] 4.2 `oil.ts`: drain, cycle, jars, oil-low crossing, pawon source cooldown
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.8, 4.9, 4.10_
@@ -47,7 +47,7 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
     - _Requirements: 5.12, 8.4, 9.1_
 
 - [ ] 5. Floor plan and 2D dev page
-  - [ ] 5.1 Author `floorPlan.ts`: walls, pillar and furniture occluders, senthong tengah door, ~80 nav nodes + edges, puppets, 8 oil jars, pawon source, 4–6 notes, kelir, spawn, area ambient; data tests (graph connected, areas correct, oil economy)
+  - [ ] 5.1 Author `floorPlan.ts`: walls, pillar and furniture occluders, senthong tengah door, ~80 nav nodes + edges, puppets, 8 oil jars, pawon source, 4–6 notes, kelir, spawn, area ambient; data tests (graph connected, areas correct, oil economy, wall endpoints that meet are bit-identical, no nav node within 0.1 m of an occluder or the door)
     - _Requirements: 4.10, 7.1, 7.5_
   - [ ] 5.2 Dev-only `/dev/plan` page: top-down canvas driving `stepWorld` with keyboard movement and lamp key; draws walls, occluders, shadow nodes, Kala and path distance; 404 in production. Use it to tune Kala before 3D exists
     - _Requirements: 5.1, 5.3, 5.7_

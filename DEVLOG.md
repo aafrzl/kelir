@@ -52,3 +52,17 @@ Running log for the Kiroween 2026 "How Kiro was used" write-up. New entries are 
   - The 16px floor is enforced through Tailwind's text scale, so generated components never need editing.
   - A mutation check proves the focus-rule test fails if the rule moves into a layer.
 - Time saved vs. doing it by hand (rough): ~3 hours. Measuring roughly 60 pairings by hand is where contrast bugs usually slip through.
+
+## 2026-11-13 — Task 4.1: 2D geometry
+- What was built:
+  - `src/game/systems/geometry.ts` (pure): segment intersection, line-of-sight occlusion, `distanceToSegment`, `toWorld`, the lamp's position and the player's body occluder. Plus shared `types.ts` and `constants.ts`.
+  - 28 unit tests and 11 fast-check properties, written before the code.
+- Kiro features used: spec sub-task 4.1; `tech.md`/`structure.md` steering (pure systems, PBT naming); the ESLint import guard from task 1; the `test-related-on-save` hook on every systems save; `kelir-reviewer` sub-agent (two rounds, including an independent brute-force check of the ray maths).
+- What Kiro caught or decided:
+  - A lamp held 0.4 m ahead would light the next room when the player stands near a wall. `lampPosition` now keeps 0.1 m of clearance from every wall at right angles, using a ray-into-capsule test.
+  - The reviewer showed the first version only checked along the ray, so a grazed wall could still put the light inside its thickness. It also found that three.js's default 0.5 m shadow near-plane would drop the body's shadow. design.md and r3f-scene.md now require a thin-slab body proxy, `shadow-camera-near ≈ 0.02` and walls under 0.2 m thick.
+  - The first pull-back properties hit the interesting case only 4.8 times per 1,000 runs. A targeted generator (walls crossing, grazing or cornering 1–60 cm ahead) now reaches it in 94% of samples.
+  - A touch counts as occluded, so light and catches never leak through wall joints or pillar corners.
+  - Mutation runs (12 deliberate bugs across two rounds) were each caught by at least one test.
+  - A failing property once ran for over 5 minutes while fast-check shrank it. Run counts were tuned so the file takes about 0.65 s per save.
+- Time saved vs. doing it by hand (rough): ~3 hours. The capsule edge case would likely have surfaced only as a lighting bug in task 9.

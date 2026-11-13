@@ -98,13 +98,18 @@ Data tests (`floorPlan.test.ts`): the nav graph is connected; every node is insi
 
 ### `geometry.ts`
 ```ts
-function segmentsIntersect(p1: Vec2, p2: Vec2, q1: Vec2, q2: Vec2): boolean; // proper + touching cases
-function isOccluded(from: Vec2, to: Vec2, segments: readonly Wall[]): boolean;
+// types.ts: Vec2, Wall
+// constants.ts: GEOMETRY_EPSILON, LAMP_OFFSET (0.4 m), LAMP_WALL_MARGIN (0.1 m), LAMP_MIN_REACH (1 mm), BODY_WIDTH (0.5 m)
+function segmentsIntersect(p1: Vec2, p2: Vec2, q1: Vec2, q2: Vec2): boolean; // proper + touching + collinear overlap
+function isOccluded(from: Vec2, to: Vec2, segments: readonly Wall[]): boolean; // bounding-box reject first
 function distance(a: Vec2, b: Vec2): number;
-function lampPosition(player: Vec2, facing: Vec2): Vec2;   // player + facing * LAMP_OFFSET (0.4 m)
-function bodyOccluder(player: Vec2, facing: Vec2): Wall;   // BODY_WIDTH (0.5 m) segment, perpendicular to facing, centred on the player
+function distanceToSegment(p: Vec2, w: Wall): number;
+function lampPosition(player: Vec2, facing: Vec2, walls: readonly Wall[]): Vec2; // player + facing * LAMP_OFFSET, pulled back to
+                                                                                  // keep LAMP_WALL_MARGIN from every wall's centreline
+function bodyOccluder(player: Vec2, facing: Vec2): Wall;   // BODY_WIDTH segment, perpendicular to facing, centred on the player
 function toWorld(v: Vec2, height?: number): [number, number, number];
 ```
+`lampPosition` takes every opaque segment except the body. Clearance is measured at right angles (the ray enters a capsule of radius LAMP_WALL_MARGIN around each wall), so the lamp never shines from the far side of a wall or from inside its 3D thickness. If the player is already inside a wall's margin (only possible without collision), the lamp keeps half the player's clearance instead. A touch counts as occluded, so light and catches never leak through wall joints or pillar corners.
 
 ### `oil.ts`
 ```ts
@@ -206,8 +211,8 @@ type Action = 'forward' | 'back' | 'left' | 'right' | 'interact' | 'lamp' | 'jou
 - **`GameCanvas`**: `<Canvas shadows>` → `<Suspense fallback={null}>` → `<Physics>` with `House`, `Player`, `Blencong`, `Kala`, pickups, `Kelir`, `PostFX`, `GameLoop`, `SceneReady`. `SceneReady` calls `gl.compile(scene, camera)`, waits for the first frame, then sets a ready flag.
 - **Loading overlay**: `GununganTransition` is a DOM overlay **outside** the Canvas, driven by drei `useProgress` plus the ready flag, so it can swing out over the live scene. It then shows "Click to enter the performance", which requests pointer lock on the canvas.
 - **Lighting**: no directional moonlight (without shadows it would light windowless rooms). Readability comes from `areaAmbient` (vertex colour / low emissive on each area's merged mesh) plus additive moon-shaft planes at openings. Ambient near zero.
-- **`Blencong`**: point light at `lampPosition()`, `distance = SHADOW_RANGE[lamp]`, the only `castShadow` light. Flicker is smooth noise at ≤ 3 Hz with a brightness swing under 10%, so it never counts as a flash (WCAG 2.3.1). Intensity follows oil and lamp state.
-- **Shadow casters**: merged walls (≤ 3 meshes), instanced pillars (1), merged furniture (≤ 3), and an invisible player-body proxy (capsule with `colorWrite: false`, `depthWrite: false`, `castShadow`) that matches `bodyOccluder()`. Floors, roof and the kelir do not cast. Target ≤ 8 casters → ≤ 48 shadow-pass draw calls.
+- **`Blencong`**: point light at `lampPosition()`, `distance = SHADOW_RANGE[lamp]`, the only `castShadow` light. `shadow-camera-near ≈ 0.02` (three's default 0.5 m would drop shadows from the body and from walls the lamp is close to). Flicker is smooth noise at ≤ 3 Hz with a brightness swing under 10%, so it never counts as a flash (WCAG 2.3.1). Intensity follows oil and lamp state.
+- **Shadow casters**: merged walls (≤ 3 meshes), instanced pillars (1), merged furniture (≤ 3), and an invisible player-body proxy that casts shadows (`colorWrite: false`, `depthWrite: false`, `castShadow`). The proxy is a **thin slab** matching `bodyOccluder()` (BODY_WIDTH wide, centred on the player), not a capsule, so the lamp never ends up inside it. With collision the lamp's reach is at least `PLAYER_RADIUS − LAMP_WALL_MARGIN` (task 8 sets `PLAYER_RADIUS`), so the slab's half-depth + 0.02 m must stay below that. Every wall's 3D half-thickness stays below `LAMP_WALL_MARGIN` (0.1 m), so the lamp is never inside wall geometry. Floors, roof and the kelir do not cast. Target ≤ 8 casters → ≤ 48 shadow-pass draw calls.
 - **`Kala`**: (1) silhouette decal on the lamp-facing side of the occluder that hides Kala, at the point where the lamp→Kala ray crosses it, scaled by distance; (2) within 3 m, a dark soft-edged figure that fades over 200 ms and is hidden whenever its `position` is lit. A shadow-map-aware fade shader is a stretch goal, not MVP.
 - **`KalaEdge`** (HUD): Kala's silhouette slides along a HUD panel edge while `kalaPathDistance ≤ 3`.
 - **`PostFX`**: Vignette, Noise, ChromaticAberration and Bloom (high quality only); strengths = f(distortion). Reduced motion: static vignette only (no grain, no aberration).
