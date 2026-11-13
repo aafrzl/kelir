@@ -66,3 +66,15 @@ Running log for the Kiroween 2026 "How Kiro was used" write-up. New entries are 
   - Mutation runs (12 deliberate bugs across two rounds) were each caught by at least one test.
   - A failing property once ran for over 5 minutes while fast-check shrank it. Run counts were tuned so the file takes about 0.65 s per save.
 - Time saved vs. doing it by hand (rough): ~3 hours. The capsule edge case would likely have surfaced only as a lighting bug in task 9.
+
+## 2026-11-13 — Game-dev agent skills installed
+- What was added: 31 workspace skills in `.kiro/skills/` from [awesome-gamedev-agent-skills](https://github.com/gamedev-skills/awesome-gamedev-agent-skills) at commit `c6ca6c4` (Apache-2.0; LICENSE and NOTICE copied alongside):
+  - web engines (6): three.js scene setup, materials/lighting and glTF loading; Phaser core and arcade physics; PixiJS
+  - disciplines (15): game AI, behaviour trees, audio design, camera, game feel, game UI/UX, input, level design, performance, physics tuning, procedural generation, save systems, shaders, dialogue, asset creation
+  - genres (9): card game, FPS, platformer, puzzle, roguelike, RPG, survival-crafting, tower defense, visual novel
+  - workflow: game-docs
+- Kiro features used: workspace skills (`.kiro/skills/`, progressive disclosure); custom agent `kelir-builder` given `skill://` resources so it loads workspace and global skills.
+- What Kiro caught or decided:
+  - Before copying, reviewed every file: no prompt-injection phrasing, no network calls or shell execution in the five bundled Python helpers, links only to engine docs.
+  - Installed by copy from the reviewed clone instead of `npx skills add`, so the repo holds exactly the reviewed commit.
+  - Checked for name clashes with global skills (none).

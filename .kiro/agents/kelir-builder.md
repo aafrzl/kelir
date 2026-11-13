@@ -5,6 +5,8 @@ tools: ["read", "write", "shell", "web", "subagent/kelir-reviewer"]
 resources:
   - file://.kiro/steering/**/*.md
   - file://.kiro/specs/kelir-core/*.md
+  - skill://.kiro/skills/*/SKILL.md
+  - skill://~/.kiro/skills/*/SKILL.md
 permissions:
   rules:
     - capability: shell

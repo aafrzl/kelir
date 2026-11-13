@@ -43,3 +43,5 @@ _Written from [`DEVLOG.md`](DEVLOG.md) before submission._ The `.kiro/` folder h
 ## Assets and licence
 
 Every asset, font and sound is original, CC0 or generated in code, and listed in [`ASSETS.md`](ASSETS.md). Code is released under the [MIT licence](LICENSE).
+
+The agent skills in `.kiro/skills/` come from [awesome-gamedev-agent-skills](https://github.com/gamedev-skills/awesome-gamedev-agent-skills) (commit `c6ca6c4`) and stay under their own Apache-2.0 licence; see `.kiro/skills/LICENSE-awesome-gamedev-agent-skills` and `NOTICE-awesome-gamedev-agent-skills`. They are development tooling, not part of the game.
