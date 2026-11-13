@@ -33,3 +33,22 @@ Running log for the Kiroween 2026 "How Kiro was used" write-up. New entries are 
   - `shadcn` moved to devDependencies, so production audit is 0.
   - ESLint 9 and TypeScript 5.9 kept on purpose; they match `eslint-config-next` 16.4.6.
 - Time saved vs. doing it by hand (rough): ~1.5 hours.
+
+## 2026-11-13 — Task 3: Colour tokens and fonts
+- What was built:
+  - Dark-only token system in `globals.css`: 10 hex primitives mapped onto the shadcn roles, scoped overrides for the slider, tooltip and lit `[data-surface="kelir"]` panels, and one global solid focus outline.
+  - Inter, Cormorant Garamond (600/700) and Noto Sans Javanese, self-hosted through `next/font`. Only Inter and Cormorant are preloaded.
+  - `src/lib/a11y.ts` (WCAG contrast, alpha compositing, OKLab/OKLCH mixing) and a 68-test suite. It parses the primitives *and* the role mappings from the CSS and measures every pairing the base-nova components render, on dark and on kelir surfaces.
+- Kiro features used: spec task 3; `design-system.md` steering (file-match on CSS/app files); skills `better-colors`, `better-typography`, `better-accessibility`, `shadcn` (dry-run `add --view` to read what each component actually renders); the `ui-design-and-a11y-guard` hook on each save; `kelir-reviewer` sub-agent (two rounds).
+- What Kiro caught or decided:
+  - Reading the real component classes exposed three mapping problems the design doc couldn't see:
+    - The Switch's 80% off track failed at the old `--soga-muda` (2.50:1), so it went to `#9C6B52` (3.18:1).
+    - shadcn draws `--destructive` as text, so it maps to `--bahaya-muda`.
+    - There was no muted-text token, so `--kelir-redup` was added.
+  - The reviewer caught:
+    - The kelir scope still used blencong for primary and links (1.61:1).
+    - Default Tabs mark the active tab by colour only (1.24:1); `variant="line"` is now required.
+    - shadcn's 50% focus glow fails on filled controls and the dialog footer (2.90:1). Fixed with an unlayered 2px outline, confirmed outside every `@layer` in the compiled CSS.
+  - The 16px floor is enforced through Tailwind's text scale, so generated components never need editing.
+  - A mutation check proves the focus-rule test fails if the rule moves into a layer.
+- Time saved vs. doing it by hand (rough): ~3 hours. Measuring roughly 60 pairings by hand is where contrast bugs usually slip through.

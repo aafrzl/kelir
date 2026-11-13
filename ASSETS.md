@@ -5,6 +5,6 @@ Every file in `public/assets/` and every font, sound or image used in the game o
 | File | Type | Source / author | Licence | Notes |
 |---|---|---|---|---|
 | (procedural) gamelan ambience | audio | generated at runtime with Web Audio | n/a (code, MIT) | slendro-like scale |
-| Cormorant Garamond | font | Google Fonts | SIL OFL 1.1 | display |
-| Inter | font | Google Fonts | SIL OFL 1.1 | body/UI |
-| Noto Sans Javanese | font | Google Fonts | SIL OFL 1.1 | decorative aksara, always translated |
+| Cormorant Garamond | font | Google Fonts, self-hosted via `next/font` | SIL OFL 1.1 | display, weights 600/700 |
+| Inter | font | Google Fonts, self-hosted via `next/font` | SIL OFL 1.1 | body/UI, variable weight |
+| Noto Sans Javanese | font | Google Fonts, self-hosted via `next/font` | SIL OFL 1.1 | decorative aksara, always translated; not preloaded |

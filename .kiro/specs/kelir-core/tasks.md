@@ -24,7 +24,7 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
   - Link the repo to Vercel; every push to `main` deploys
   - _Requirements: 13.3_
 
-- [ ] 3. Colour tokens and fonts
+- [x] 3. Colour tokens and fonts
   - Define colour tokens and the shadcn variable mapping in `globals.css` (including `--soga-muda`, `--bahaya-muda` and the ring-on-kelir rule); load Cormorant Garamond, Inter and Noto Sans Javanese via `next/font/google`; measure every token pairing in use
   - _Requirements: 12.4, 12.5_
 
@@ -126,6 +126,7 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
 ## Milestone D — Costume (Sat 28 Nov – Tue 1 Dec)
 
 - [ ] 19. UI primitives: `KelirPanel` (backlit cloth surface, flame-driven brightness via a CSS variable), `ShadowButton` (silhouette button, puppet-stick hover motion, reduced-motion fade), `GununganTransition` (replaces the placeholder overlay)
+  - `KelirPanel` sets `data-surface="kelir"`; pick a selected-state treatment for kelir surfaces (`--prada` is only ~1.9:1 on kelir) and add its test row
   - _Requirements: 1.5, 2.1, 2.2, 2.4_
 
 - [ ] 20. Title screen and device gates
@@ -138,7 +139,7 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
 
 - [ ] 22. Distortion pipeline
   - `PostFX` (Vignette, Noise, ChromaticAberration, flame Bloom on high) driven by `distortion`
-  - HUD CSS variables (`--sukma`, `--oil`, `--distortion`) for ink-bleed and backlight effects, with the contrast floor held at maximum strength
+  - HUD CSS variables (`--hud-sukma`, `--hud-oil`, `--hud-distortion`; `--sukma` is already the colour token) for ink-bleed and backlight effects, with the contrast floor held at maximum strength
   - `flashGate.ts` (pure, with a property test); reduced motion: static vignette + text only
   - _Requirements: 6.5, 6.6, 10.6, 12.4_
 

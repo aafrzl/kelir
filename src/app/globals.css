@@ -2,24 +2,28 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* KELIR is dark-only: <html class="dark"> is always set, so shadcn's `dark:` variants
+   (tuned for dark surfaces) always apply. There is no light theme. */
 @custom-variant dark (&:is(.dark *));
 
+/* Size floors from design-system.md: functional UI ≥ 16px, HUD labels ≥ 14px.
+   Tailwind's two smallest steps are remapped so generated shadcn components
+   (which use text-sm / text-xs) meet them without hand-editing their styles.
+   Plain @theme (not inline) so utilities read var(--text-xs) and scopes can raise it. */
+@theme {
+    --text-xs: 0.875rem;
+    --text-xs--line-height: calc(1.25 / 0.875);
+    --text-sm: 1rem;
+    --text-sm--line-height: 1.5;
+}
+
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
+    /* Fonts (next/font variables set on <html> in layout.tsx) */
+    --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-heading: var(--font-cormorant-garamond), ui-serif, Georgia, serif;
+    --font-aksara: var(--font-noto-sans-javanese);
+
+    /* Semantic colours for utilities (bg-background, text-muted-foreground, …) */
     --color-ring: var(--ring);
     --color-input: var(--input);
     --color-border: var(--border);
@@ -38,6 +42,19 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+
+    /* Game palette for custom compositions (bg-blencong, text-sukma, …) */
+    --color-malam: var(--malam);
+    --color-kelir: var(--kelir);
+    --color-kelir-redup: var(--kelir-redup);
+    --color-blencong: var(--blencong);
+    --color-prada: var(--prada);
+    --color-soga: var(--soga);
+    --color-soga-muda: var(--soga-muda);
+    --color-sukma: var(--sukma);
+    --color-bahaya: var(--bahaya);
+    --color-bahaya-muda: var(--bahaya-muda);
+
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -48,82 +65,103 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    color-scheme: dark;
+
+    /* Primitives (design-system.md). Ratios are WCAG contrast on --malam unless noted;
+       src/lib/a11y.test.ts re-measures every pairing below. */
+    --malam: #0B0A0D;       /* night: page background, deepest shadow */
+    --kelir: #EDE3CC;       /* cloth: lit panels, text on dark (15.48:1) */
+    --kelir-redup: #C2BAA8; /* dimmed cloth: secondary text (10.23:1; 4.65:1 on soga) */
+    --blencong: #F2A541;    /* lamp: primary actions, focus ring, oil (9.62:1) */
+    --prada: #C9A24A;       /* gold leaf: headings, ornaments, selected state (8.23:1) */
+    --soga: #6B3E26;        /* batik brown: secondary surfaces, decorative borders (2.20:1, never a control's only edge) */
+    --soga-muda: #9C6B52;   /* light soga: control boundaries and tracks (4.36:1; 3.18:1 at the switch's 80% opacity) */
+    --sukma: #5FB3A6;       /* soul: Sukma meter (7.98:1) */
+    --bahaya: #8E1B1B;      /* danger fill under --kelir text (7.09:1); never text on malam (2.18:1) */
+    --bahaya-muda: #CD5850; /* danger text and icons on malam (4.80:1) */
+
+    /* shadcn roles → primitives */
+    --background: var(--malam);
+    --foreground: var(--kelir);
+    --card: var(--malam);
+    --card-foreground: var(--kelir);
+    --popover: var(--malam);
+    --popover-foreground: var(--kelir);
+    --primary: var(--blencong);
+    --primary-foreground: var(--malam);
+    --secondary: var(--soga);
+    --secondary-foreground: var(--kelir);
+    --muted: var(--soga);
+    --muted-foreground: var(--kelir-redup);
+    --accent: var(--prada);
+    --accent-foreground: var(--malam);
+    /* shadcn draws --destructive as text and outlines on dark, so it maps to the light
+       danger tone. Do not use Button variant="destructive": its 20% tint drops text to 3.93:1.
+       Danger fills are bg-bahaya + text-kelir. */
+    --destructive: var(--bahaya-muda);
+    --border: var(--soga);
+    --input: var(--soga-muda);
+    --ring: var(--blencong);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
 }
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+/* Scoped tokens: adjust generated components through tokens, never by editing them. */
+
+/* Slider tracks are control boundaries, so they use the control-boundary tone
+   instead of the decorative --muted surface. */
+[data-slot="slider"] {
+    --muted: var(--soga-muda);
+}
+
+/* The slider thumb is drawn with bg-white; route it through the palette. */
+[data-slot="slider-thumb"] {
+    --color-white: var(--kelir);
+}
+
+/* Tooltips are functional UI text, so they get the 16px floor, not the 14px HUD one. */
+[data-slot="tooltip-content"] {
+    --text-xs: var(--text-sm);
+    --text-xs--line-height: var(--text-sm--line-height);
+}
+
+/* Lit cloth surface (KelirPanel). Roles swap so dark ink sits on the cloth.
+   --blencong on --kelir is only 1.61:1, so primary actions become silhouettes
+   (--malam fill) and the focus ring turns --malam. Ratios below are on --kelir. */
+[data-surface="kelir"] {
+    --background: var(--kelir);
+    --foreground: var(--malam);
+    --card: var(--kelir);
+    --card-foreground: var(--malam);
+    --popover: var(--kelir);
+    --popover-foreground: var(--malam);
+    --primary: var(--malam);              /* 15.48:1; also links and the checked switch */
+    --primary-foreground: var(--kelir);
+    --muted: color-mix(in oklab, var(--kelir) 85%, var(--soga)); /* hover tint: malam text 12.17:1 */
+    --muted-foreground: var(--soga);      /* 7.03:1 */
+    --destructive: var(--bahaya);         /* 7.09:1 */
+    --border: var(--soga);                /* 7.03:1 */
+    --input: var(--soga);                 /* 7.03:1; switch track at 80% is 4.42:1 */
+    --ring: var(--malam);                 /* 15.48:1 */
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
-    }
+    @apply border-border outline-ring;
+  }
+  html {
+    @apply font-sans antialiased;
+  }
   body {
     @apply bg-background text-foreground;
-    }
-  html {
-    @apply font-sans;
-    }
+  }
+}
+
+/* Focus indicator for every control (WCAG 2.4.7, 1.4.11): a solid 2px --ring outline
+   just outside shadcn's 3px glow. The glow alone is too faint: 50% blencong is 3.13:1 on
+   malam and 2.90:1 on a dialog footer, and on filled controls (primary Button, checked
+   Switch) the 1px border-ring matches the fill. Unlayered on purpose, so it wins over
+   the components' outline-none / outline-hidden utilities, which live in a layer. */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
 }
