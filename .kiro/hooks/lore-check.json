@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "lore-and-culture-check",
+      "description": "When Kiro writes story text, cutscene scripts or puppet data, check them against the lore bible and cultural-respect rules.",
+      "trigger": "PostFileSave",
+      "matcher": "src/game/(data|cutscenes)/.*",
+      "action": {
+        "type": "agent",
+        "prompt": "You just edited narrative or cultural content. Check it against lore.md: every Javanese term is glossed in English on first use in player-facing text; the ritual is never portrayed as evil; traditional figures are treated with dignity; no real dalang names or recordings; aksara Jawa is decorative and translated. Add a `// LORE-CHECK` comment to any line whose cultural accuracy you are not sure about. Keep all player-facing text in English."
+      }
+    }
+  ]
+}

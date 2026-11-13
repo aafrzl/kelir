@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "devlog-after-task",
+      "description": "After each spec task, append a DEVLOG.md entry describing what Kiro did. This becomes the 'How Kiro was used' write-up for Devpost.",
+      "trigger": "PostTaskExec",
+      "action": {
+        "type": "agent",
+        "prompt": "A spec task just finished. Append an entry to DEVLOG.md (create it if missing) using this format:\n\n## <YYYY-MM-DD> — Task <number>: <title>\n- What was built: <1-3 bullets>\n- Kiro features used: <spec task / steering file(s) that shaped it / hooks that fired / sub-agent review / property-based tests>\n- What Kiro caught or decided: <tests that failed then passed, review findings, design trade-offs>\n- Time saved vs. doing it by hand (rough): <estimate>\n\nKeep it factual and short. Do not rewrite older entries."
+      }
+    }
+  ]
+}

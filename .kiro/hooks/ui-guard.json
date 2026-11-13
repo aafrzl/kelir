@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "ui-design-and-a11y-guard",
+      "description": "When Kiro edits a UI component, make it check the design-system and accessibility rules.",
+      "trigger": "PostFileSave",
+      "matcher": "src/(ui|app)/.*\\.tsx$",
+      "action": {
+        "type": "agent",
+        "prompt": "You just edited a UI file. Before moving on, check it against design-system.md and product.md accessibility rules: (1) colours come only from design tokens, no hard-coded hex/rgb; (2) every interactive element is keyboard-reachable with the --blencong focus ring and has an accessible name; (3) no state is shown by colour alone; (4) any motion has a reduced-motion fallback (150 ms fade); (5) every spooky effect maps to a gameplay function listed in the effect-to-function table. Fix any violation now and mention the fix in one line."
+      }
+    }
+  ]
+}

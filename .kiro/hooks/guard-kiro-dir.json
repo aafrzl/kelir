@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "guard-kiro-dir",
+      "description": "Block any write that would add .kiro to .gitignore (that would disqualify the hackathon submission).",
+      "trigger": "PreToolUse",
+      "matcher": "write",
+      "action": { "type": "command", "command": "node .kiro/scripts/guard-gitignore.mjs" },
+      "timeout": 10
+    }
+  ]
+}

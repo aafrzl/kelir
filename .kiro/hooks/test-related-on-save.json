@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "test-related-on-save",
+      "description": "When Kiro changes a pure game system or a store, run the unit and property-based tests related to that file.",
+      "trigger": "PostFileSave",
+      "matcher": "src/(game/systems|stores)/.*\\.ts$",
+      "action": { "type": "command", "command": "npx vitest related --run {{filePath}}" },
+      "timeout": 120
+    }
+  ]
+}

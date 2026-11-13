@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "typecheck-on-stop",
+      "description": "After each agent turn, type-check the project so type errors are caught before the next step.",
+      "trigger": "Stop",
+      "action": { "type": "command", "command": "test ! -f tsconfig.json || npx tsc --noEmit --pretty false" },
+      "timeout": 180
+    }
+  ]
+}

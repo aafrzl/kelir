@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "session-context",
+      "description": "At session start, give Kiro the git status, the next open spec tasks and the latest DEVLOG entries so every session resumes where the last one stopped.",
+      "trigger": "SessionStart",
+      "action": { "type": "command", "command": "node .kiro/scripts/session-context.mjs" },
+      "timeout": 15
+    }
+  ]
+}

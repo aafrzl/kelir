@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "asset-licence-and-budget",
+      "description": "When Kiro adds an asset, enforce the size budget and log its source and licence.",
+      "trigger": "PostFileCreate",
+      "matcher": "public/assets/",
+      "action": {
+        "type": "agent",
+        "prompt": "A new asset was added under public/assets/. (1) Check its file size against the budgets in tech.md (textures <= 1024 px except the kelir cloth, total initial download <= 15 MB) and compress or resize if needed. (2) Add a row to ASSETS.md with file path, source, author and licence. Only original, CC0 or procedurally generated assets are allowed; if the source or licence is unknown, stop and ask me before using it."
+      }
+    }
+  ]
+}
