@@ -33,8 +33,8 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
     - _Requirements: 5.1, 5.7_
   - [x] 4.2 `oil.ts`: drain, cycle, jars, oil-low crossing, pawon source cooldown
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.8, 4.9, 4.10_
-  - [ ] 4.3 `sukma.ts`: `tickSukma`, `distortionFrom`
-    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.7_
+  - [x] 4.3 `sukma.ts`: `tickSukma`, `distortionFrom`, `nextSukmaLow` (low Sukma with hysteresis)
+    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7_
   - [ ] 4.4 `shadowZones.ts`: `activeOccluders`, `classify`; benchmark (< 0.5 ms for 80 nodes × 250 segments)
     - _Requirements: 5.1, 5.2, 5.12_
   - [ ] 4.5 `kala.ts`: dormant/active/frozen/hidden, BFS on the shadow subgraph, relocate/hide, angry speed, catch with line-of-sight, path distance, restore respawn
@@ -43,7 +43,7 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
     - _Requirements: 7.2, 7.4, 7.5, 7.6, 7.7, 9.5_
   - [ ] 4.7 `src/lib/storage.ts` (guarded localStorage, in-memory fallback) and `save.ts` with a round-trip property test
     - _Requirements: 11.4, 11.5, 11.6_
-  - [ ] 4.8 `step.ts`: `stepWorld` in the tick order from `design.md`, with whole-world property tests (Kala in this tick's shadow set; lamp toggling never teleports Kala)
+  - [ ] 4.8 `step.ts`: `stepWorld` in the tick order from `design.md`, with whole-world property tests (Kala in this tick's shadow set; lamp toggling never teleports Kala); dev-only warning when a system receives NaN
     - _Requirements: 5.12, 8.4, 9.1_
 
 - [ ] 5. Floor plan and 2D dev page
@@ -81,8 +81,8 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
   - `OilGauge` on the lamp, text in "show numbers" mode, meter with threshold announcements, reduced-motion static cue
   - _Requirements: 4.6, 4.7, 4.10, 5.1, 10.6, 13.2_
 
-- [ ] 10. `SukmaMeter`: reticle ring, shape change below 30, text and accessible value
-  - _Requirements: 6.4, 12.5_
+- [ ] 10. `SukmaMeter`: reticle ring, shape change while Sukma is low (`sukmaLow` from the store, not a raw `< 30` check in the UI), text and accessible value
+  - _Requirements: 6.4, 6.6, 12.5_
 
 - [ ] 11. Kala in the world
   - [ ] 11.1 Visuals: silhouette decal on the lamp-facing side of the occluder hiding Kala; near figure (dark, soft-edged, 200 ms fade, hidden when its position is lit). Stretch: shadow-map-aware fade shader
@@ -140,7 +140,7 @@ Cut list if behind, in this order (none touch the accessibility commitments): (1
 - [ ] 22. Distortion pipeline
   - `PostFX` (Vignette, Noise, ChromaticAberration, flame Bloom on high) driven by `distortion`
   - HUD CSS variables (`--hud-sukma`, `--hud-oil`, `--hud-distortion`; `--sukma` is already the colour token) for ink-bleed and backlight effects, with the contrast floor held at maximum strength
-  - `flashGate.ts` (pure, with a property test); reduced motion: static vignette + text only
+  - `flashGate.ts` (pure, with a property test); reduced motion: static vignette + text only, with the text shown while `sukmaLow`
   - _Requirements: 6.5, 6.6, 10.6, 12.4_
 
 - [ ] 23. Outcomes

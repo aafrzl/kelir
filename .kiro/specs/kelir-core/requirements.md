@@ -13,6 +13,7 @@ All numeric values below (rates, ranges, counts, thresholds) are starting tuning
 - **Blencong**: the player's oil lamp. States: `high`, `low`, `off`. Held 0.4 m in front of the player.
 - **Oil**: lamp fuel, 0–100.
 - **Sukma**: the player's soul meter, 0–100.
+- **Low Sukma**: Sukma below 30. It stays low until Sukma is back at 35 or above, so the cue never flickers at the threshold.
 - **Kala**: the shadow entity hunting the player.
 - **Occluder**: a 2D line segment that blocks the lamp's light: walls, the closed senthong tengah door, pillars, large furniture, and the player's own body. The kelir cloth is not an occluder (it is translucent).
 - **Nav node**: a point on the 2D floor plan that Kala can stand on.

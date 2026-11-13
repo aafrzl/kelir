@@ -47,7 +47,7 @@ Contrast: body text ≥ 4.5:1, large text and UI glyphs ≥ 3:1. `src/lib/a11y.t
 | Effect | Function it communicates |
 |---|---|
 | Panels lit from behind, flickering with the flame | Oil level: flicker speeds up and light dims as oil drops |
-| Text "ink bleed" / blur on HUD | Sukma is low; strength scales with (1 − sukma) |
+| Text "ink bleed" / blur on HUD | Sukma is falling; strength = `distortion` (0 at Sukma 60 and above, 1 at 0). "Low Sukma" (below 30) is a separate, non-motion cue: the meter's shape and the reduced-motion text |
 | Silhouette of Kala sliding across a UI panel edge | Kala is within 3 m path distance, in a shadow that touches you (often your own) |
 | Cempala knocking (audio + on-screen knock glyph) | Proximity warning; tempo = distance |
 | Gunungan swing | Loading / scene transition / act change |

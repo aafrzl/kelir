@@ -96,3 +96,22 @@ Running log for the Kiroween 2026 "How Kiro was used" write-up. New entries are 
   - Mutation checks: 11 deliberate oil bugs and 5 geometry bugs are each caught; the property files alone catch the ones that the unit tests used to catch on their own.
   - The suite passed 15 of 15 consecutive runs (150 tests).
 - Time saved vs. doing it by hand (rough): ~4 hours. The lamp-behind-wall bug would have shown up as random light leaks in task 9, which are hard to reproduce.
+
+## 2026-11-13 — Task 4.3: Sukma (the player's soul)
+- What was built:
+  - `src/game/systems/sukma.ts` (pure): `tickSukma` (drain 4/s in darkness, regain 2/s in lamplight, snapped to exactly 0 so the soul is lost on the right tick), `distortionFrom` (1 − smoothstep, the single value every horror effect will read), and `nextSukmaLow` (low Sukma below 30, clearing only at 35).
+  - Shared `time.ts` (`validDt`), now also used by `oil.ts`.
+  - 24 unit tests and 6 fast-check properties, written first (they failed with "Cannot find module" before `sukma.ts` existed).
+- Kiro features used: spec sub-task 4.3; workspace skills `survival-crafting`, `game-feel`, `game-ui-ux`, `audio-design` and `game-ai`; `test-related-on-save` hook; `kelir-reviewer` sub-agent (two rounds).
+- What the skills changed:
+  - `survival-crafting` ("warn, then fail with time to recover"; "simulate and report the timings"): a timing test plus measured numbers. From a full soul in darkness, distortion starts at 10.02 s, low Sukma at 17.52 s and the soul is lost at exactly 25 s, a 7.48 s warning. The test keeps a 5 s fairness floor so the balance pass can't silently remove the warning.
+  - `game-ai` (threshold flicker) and `audio-design` ("intensity with hysteresis"): the low-Sukma flag uses separate enter/exit levels. The reviewer measured that mashing the lamp key at Sukma 30 would flip a plain `< 30` flag 6.7 times a second; with hysteresis, at most 0.1.
+  - `game-feel` (ease everything; WCAG 2.3.1 flashing): smoothstep eases in and out, and a property proves distortion changes by at most 0.1 per second. Effects driven by it ramp over at least 10 s and cannot flash.
+  - `game-ui-ux` (no colour-only signals; HUD driven by game state): "low Sukma" is one flag in the store that the meter and the reduced-motion text read, instead of each UI piece comparing `sukma < 30`.
+- What Kiro caught or decided:
+  - R6.6 used "low Sukma" without defining it; the requirements glossary now defines it (flagged to the user for approval).
+  - NaN counts as a full soul, so a bug can never kill the player; `stepWorld` (4.8) will warn about NaN in dev builds.
+  - Coverage guards were measured over 30 seeds before setting them; the first segment generator reached "lost after a warning" in only 25–30% of runs, so it now includes 10–30 s stretches.
+  - Mutation check: 12 deliberate bugs, all caught; one ("onset ignored") escaped the property file until its generator mixed in grid values.
+  - The reviewer caught two doc lines that no longer matched (the 7.48 s bound and the ink-bleed row in `design-system.md`); both fixed.
+- Time saved vs. doing it by hand (rough): ~2 hours.

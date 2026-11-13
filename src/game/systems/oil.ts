@@ -12,10 +12,8 @@ import {
   OIL_SOURCE_COOLDOWN,
   TIME_EPSILON,
 } from "./constants";
+import { validDt } from "./time";
 import type { LampState } from "./types";
-
-/** A usable time step: negative, NaN and infinite steps count as no time passing. */
-const validDt = (dt: number): number => (Number.isFinite(dt) && dt > 0 ? dt : 0);
 
 /** Oil pulled into 0..OIL_MAX. NaN counts as an empty tank. */
 export function clampOil(oil: number): number {

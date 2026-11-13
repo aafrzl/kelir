@@ -62,3 +62,29 @@ export const OIL_SOURCE_AMOUNT = 40;
 
 /** Game seconds before the pawon oil source can be used again (Req 4.10). */
 export const OIL_SOURCE_COOLDOWN = 90;
+
+// --- Sukma: the player's soul (Requirement 6) ---------------------------------
+
+/** Sukma (soul) capacity. Sukma always stays within 0..SUKMA_MAX. */
+export const SUKMA_MAX = 100;
+
+/** Sukma at the start of a run and after every restore (Req 6.7, 11.4). */
+export const SUKMA_START = SUKMA_MAX;
+
+/** Sukma remainders below this snap to exactly 0, so the soul is lost on the tick it runs out. */
+export const SUKMA_EPSILON = 1e-9;
+
+/** Sukma lost per second of game time while the lamp is off (Req 6.1). */
+export const SUKMA_DRAIN_DARK = 4;
+
+/** Sukma regained per second of game time while the lamp is lit, high or low (Req 6.2). */
+export const SUKMA_REGEN_LIT = 2;
+
+/** Sukma at and above which there is no distortion; below it, distortion eases up to 1 at Sukma 0 (Req 6.5). */
+export const DISTORTION_ONSET = 60;
+
+/** Sukma becomes "low" below this: the meter's shape change and the reduced-motion text (Req 6.6). */
+export const SUKMA_LOW = 30;
+
+/** Low Sukma clears only once Sukma is back at or above this, so the cue never flickers at the threshold. */
+export const SUKMA_LOW_EXIT = 35;

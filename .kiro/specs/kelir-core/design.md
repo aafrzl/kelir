@@ -59,7 +59,7 @@ flowchart LR
 1. Read the input snapshot and settings.
 2. If the phase is not `playing` → skip steps 3–8 (game time does not advance).
 3. `tickOil(oil, lamp, dt)` → new oil, possibly forced `off`; oil-low crossing flag. `tickOilSource(oilSourceCooldown, dt)` → seconds left on the pawon source's cooldown.
-4. `tickSukma(sukma, lamp, dt)` → new Sukma.
+4. `tickSukma(sukma, lamp, dt)` → new Sukma; `distortionFrom(sukma)` → distortion; `nextSukmaLow(sukma, sukmaLow)` → low flag.
 5. `classify(plan, lamp, occluders)` → `Set<NodeId>` of shadow nodes, **every tick**, from the lamp position and state of this tick. Budget: ~80 nodes × ~250 segments; benchmarked in task 4.4 (target < 0.5 ms).
 6. `tickKala(kala, ctx, dt)` → new Kala state, `caught` flag, `pathDistance`.
 7. `outcome(progress, sukma, caught)` → `playing | caught | soulLost | dawn`.
@@ -128,10 +128,23 @@ The pawon source stores **seconds left** on its cooldown, counted down on game t
 
 ### `sukma.ts`
 ```ts
-// constants.ts: SUKMA_MAX = 100, SUKMA_START = 100, DRAIN_DARK = 4, REGEN_LIT = 2
-function tickSukma(sukma: number, lamp: LampState, dt: number): number;
-function distortionFrom(sukma: number): number;  // 0..1, = 1 − smoothstep(0, 60, sukma)
+// constants.ts: SUKMA_MAX = 100, SUKMA_START = 100, SUKMA_DRAIN_DARK = 4, SUKMA_REGEN_LIT = 2,
+//               DISTORTION_ONSET = 60, SUKMA_LOW = 30, SUKMA_LOW_EXIT = 35
+function tickSukma(sukma: number, lamp: LampState, dt: number): number;  // snaps remainders < 1e-9 to exactly 0
+function distortionFrom(sukma: number): number;  // 0..1, = 1 − smoothstep(0, DISTORTION_ONSET, sukma)
+function nextSukmaLow(sukma: number, wasLow: boolean): boolean;  // low below 30, clears at 35 or above
 ```
+- **Distortion never jumps.** Smoothstep's slope is at most 1.5 / `DISTORTION_ONSET` (0.025) per unit of Sukma, and Sukma moves at most 4 per second, so distortion changes by at most 0.1 per second (about 0.0017 per tick). Effects driven by it ramp over at least 10 s from rest to full and cannot flash (R10.6); the audio engine still smooths its detune parameter.
+- **One definition of "low Sukma"** (glossary): `sukmaLow` drives the SukmaMeter's shape change (task 10) and the reduced-motion text (R6.6, task 22). The 5-unit gap between entering and clearing is hysteresis, so a soul hovering at 30 never makes the cue flicker.
+- **Timings at the current constants** (measured at 60 Hz, from a full soul in darkness): distortion begins after 10.02 s, low Sukma after 17.52 s, soul lost after exactly 25 s, so the low warning shows for 7.48 s. Relit from just below 30, low Sukma clears after 2.5 s and every effect is back at rest after 15 s; empty to full takes 50 s. Holding Sukma steady takes 2 s of light per second of darkness. `sukma.test.ts` checks these from the constants and keeps at least 5 s of low warning.
+- NaN counts as a full soul, so an unknown value can never end the run. `stepWorld` (task 4.8) logs a dev-only warning whenever a system receives NaN, so this default never hides a bug.
+- `sukmaLow` starts `false` and is reset to `false` on every restore (Sukma is set to 100 then).
+
+### `time.ts`
+```ts
+function validDt(dt: number): number;  // negative, NaN and infinite steps count as 0: no time passes
+```
+Shared by every system that takes a `dt`, so bad steps are handled the same way everywhere.
 
 ### `shadowZones.ts`
 ```ts
@@ -184,7 +197,7 @@ interface Checkpoint {
 }
 function serialize(c: Checkpoint): string;
 function deserialize(s: string): Checkpoint | null;   // null on invalid JSON, wrong shape or other version
-function restore(c: Checkpoint): { oil: number; sukma: number; /* … */ };  // oil = max(c.oil, 60), sukma = 100, Kala via respawnAfterRestore
+function restore(c: Checkpoint): { oil: number; sukma: number; /* … */ };  // oil = max(c.oil, 60), sukma = 100, sukmaLow = false, Kala via respawnAfterRestore
 ```
 The senthong tengah door state is derived from `progress`, so it is not stored. Storage access goes through `src/lib/storage.ts` (try/catch, in-memory fallback).
 
@@ -193,7 +206,7 @@ The senthong tengah door state is derived from `progress`, so it is not stored. 
 interface GameStore {
   phase: 'title' | 'loading' | 'playing' | 'paused' | 'cutscene' | 'journal' | 'ended';
   gameTime: number;
-  lamp: LampState; oil: number; sukma: number; distortion: number;
+  lamp: LampState; oil: number; sukma: number; distortion: number; sukmaLow: boolean;
   kala: KalaState; kalaPathDistance: number | null;
   progress: Progress; outcome: 'playing' | 'caught' | 'soulLost' | 'dawn';
   oilJarsTaken: readonly string[]; oilSourceCooldown: number; notesFound: string[]; hintsSeen: string[];
@@ -260,6 +273,9 @@ See the interfaces above. All lore text, puppet data, hint and caption strings l
 | The oil-low cue fires exactly once per downward crossing of `OIL_LOW` | oil | 4.9 |
 | For any sequence, `0 ≤ sukma ≤ 100`; strictly decreasing while `off` until 0 | sukma | 6.1–6.3 |
 | `distortionFrom` is monotonic non-increasing in sukma and within [0,1] | sukma | 6.5 |
+| `distortionFrom` changes by at most 1.5 / `DISTORTION_ONSET` per unit of Sukma (no jumps, no flashes) | sukma | 6.5, 10.6 |
+| The low-Sukma flag matches its thresholds and two flips are always at least (35 − 30) / 4 s apart | sukma | 6.6 |
+| In play at 60 Hz, the low warning shows for at least `SUKMA_LOW / SUKMA_DRAIN_DARK` s minus one tick (7.48 s at the current constants) before the soul is lost | sukma | 6.4, 6.6 |
 | `segmentsIntersect` is symmetric in its two segments | geometry | 5.1 |
 | With lamp `off`, `classify` returns the empty set | shadowZones | 5.2 |
 | Every node in `classify` result is within range and occluded | shadowZones | 5.1 |
